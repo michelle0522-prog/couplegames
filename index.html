@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>情侶情趣小懲罰</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31102f 100%);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+    }
+    .btn-gradient:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="pb-10">
+
+  <!-- 頂部導覽 Header -->
+  <header class="sticky top-0 z-50 glass-card border-b border-rose-900/40 px-4 py-3 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">🔥</span>
+      <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-300 via-pink-400 to-purple-300">
+        情侶情趣小懲罰
+      </h1>
+    </div>
+
+    <!-- 頁籤切換按鈕 -->
+    <div class="flex bg-slate-950/80 p-1 rounded-full border border-rose-900/40 text-xs font-medium">
+      <button id="nav-draw-btn" onclick="switchPage('draw')" class="px-3 py-1.5 rounded-full transition-all flex items-center gap-1 bg-gradient-to-r from-rose-600 to-purple-600 text-white shadow-md">
+        <span>🎲 抽籤首頁</span>
+      </button>
+      <button id="nav-backend-btn" onclick="tryOpenBackend()" class="px-3 py-1.5 rounded-full transition-all flex items-center gap-1 text-slate-400 hover:text-slate-200">
+        <span>⚙️ 任務後台</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 第一部分：抽籤首頁 (Home) -->
+  <main id="home-page" class="max-w-md mx-auto px-4 pt-4 space-y-4">
+    
+    <!-- 必填篩選欄 (直觀按鈕) -->
+    <div class="glass-card p-4 rounded-2xl space-y-3 shadow-xl">
+      <div class="flex items-center justify-between text-xs font-semibold text-rose-300">
+        <span>🔍 抽籤必填條件</span>
+        <span id="filter-warning" class="text-rose-400 text-[11px]">請選擇地點與執行者</span>
+      </div>
+      
+      <div class="space-y-3">
+        <!-- 地點篩選 (按鈕) -->
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1.5">📍 執行地點 (必填)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selectLocation('在家')" id="btn-loc-home" class="py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1">
+              <span>🏠 在家</span>
+            </button>
+            <button type="button" onclick="selectLocation('任何情況')" id="btn-loc-anywhere" class="py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1">
+              <span>🌍 任何情況</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- 執行者篩選 (按鈕) -->
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1.5">👤 任務執行者 (必填)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selectExecutor('男')" id="btn-exe-male" class="py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1">
+              <span>♂️ 男</span>
+            </button>
+            <button type="button" onclick="selectExecutor('女')" id="btn-exe-female" class="py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1">
+              <span>♀️ 女</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 中間抽籤按鈕 -->
+    <div>
+      <button id="draw-btn" onclick="drawTask()" disabled class="w-full py-3.5 rounded-2xl font-bold text-base text-white btn-gradient disabled:opacity-40 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 shadow-lg">
+        <span>✨ 抽取懲罰任務</span>
+      </button>
+    </div>
+
+    <!-- 任務顯示格 (Result Box) -->
+    <div id="result-box" class="hidden glass-card p-5 rounded-2xl border-rose-500/50 text-center space-y-4 shadow-2xl relative">
+      <div class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">
+        <span id="result-tag">地點 · 執行者</span>
+      </div>
+      <div id="result-content" class="text-sm font-semibold text-slate-100 leading-relaxed px-1 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+        <!-- 任務內容 -->
+      </div>
+      
+      <!-- 操作按鈕 -->
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button onclick="handleTaskAction('已完成')" class="py-2.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-semibold text-xs border border-emerald-500/40 transition-all active:scale-95">
+          ✓ 已完成執行
+        </button>
+        <button onclick="handleTaskAction('稍後')" class="py-2.5 rounded-xl bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 font-semibold text-xs border border-rose-500/40 transition-all active:scale-95">
+          ⏳ 稍後執行
+        </button>
+      </div>
+    </div>
+
+    <!-- 雙欄任務記錄清單 (男 / 女) -->
+    <div class="space-y-2.5 pt-1">
+      <div class="flex justify-between items-center px-1">
+        <h2 class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+          <span>📋 任務記錄清單</span>
+        </h2>
+        <span class="text-[10px] text-slate-500">點擊紀錄可修改完成狀態</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <!-- 男紀錄欄 -->
+        <div class="glass-card p-3 rounded-xl space-y-2">
+          <div class="text-center font-bold text-xs pb-1.5 border-b border-purple-900/60 text-purple-400 flex justify-between items-center">
+            <span>👨 輸家：男</span>
+            <span id="male-count" class="text-[10px] bg-purple-950 px-1.5 py-0.5 rounded text-purple-300">0</span>
+          </div>
+          <div id="log-list-male" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <p class="text-[11px] text-slate-500 text-center py-4">載入中...</p>
+          </div>
+        </div>
+
+        <!-- 女紀錄欄 -->
+        <div class="glass-card p-3 rounded-xl space-y-2">
+          <div class="text-center font-bold text-xs pb-1.5 border-b border-pink-900/60 text-pink-400 flex justify-between items-center">
+            <span>👩 輸家：女</span>
+            <span id="female-count" class="text-[10px] bg-pink-950 px-1.5 py-0.5 rounded text-pink-300">0</span>
+          </div>
+          <div id="log-list-female" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <p class="text-[11px] text-slate-500 text-center py-4">載入中...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重置以上紀錄按鈕 -->
+    <div class="pt-2 text-center pb-6">
+      <button onclick="confirmResetAll()" class="w-full py-2.5 rounded-xl bg-slate-900/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-900 text-xs font-medium transition-all active:scale-95">
+        🔄 重置以上紀錄 (清空並回復抽取狀態)
+      </button>
+    </div>
+  </main>
+
+  <!-- 第二部分：任務後台 (Backend Page) -->
+  <main id="page-backend" class="hidden max-w-md mx-auto px-4 pt-4 space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-base font-bold text-rose-300 flex items-center gap-1.5">
+        <span>⚙️ 任務後台</span>
+      </h2>
+      <button onclick="switchPage('draw')" class="text-xs text-slate-400 underline">返回首頁</button>
+    </div>
+
+    <!-- 新增 / 編輯任務表單 -->
+    <div class="glass-card p-4 rounded-2xl space-y-3">
+      <h3 id="backend-form-title" class="text-xs font-bold text-rose-400 uppercase tracking-wider">➕ 新增懲罰任務</h3>
+      <input type="hidden" id="edit-task-id" value="">
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">執行地點</label>
+          <select id="input-task-loc" class="w-full bg-slate-950 text-xs text-slate-200 border border-slate-700 rounded-xl px-3 py-2">
+            <option value="在家">🏠 在家</option>
+            <option value="任何情況">🌍 任何情況</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">執行性別</label>
+          <select id="input-task-gender" class="w-full bg-slate-950 text-xs text-slate-200 border border-slate-700 rounded-xl px-3 py-2">
+            <option value="不限">⚡ 不限</option>
+            <option value="男">♂️ 男</option>
+            <option value="女">♀️ 女</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">任務內容</label>
+        <textarea id="input-task-content" rows="3" placeholder="請輸入懲罰內容描述..." class="w-full bg-slate-950 text-xs text-slate-200 border border-slate-700 rounded-xl p-3 focus:outline-none focus:border-rose-500"></textarea>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btn-save-task" onclick="saveTask()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-purple-600 font-bold text-xs text-white transition-all active:scale-95">
+          儲存任務
+        </button>
+        <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-xs">
+          取消
+        </button>
+      </div>
+    </div>
+
+    <!-- 現有任務列表 -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xs font-bold text-slate-300">📚 現有任務庫 (<span id="backend-count">0</span>)</h3>
+        <input type="text" id="backend-search" oninput="renderBackendList()" placeholder="搜尋任務..." class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-200 w-28 focus:outline-none focus:border-rose-500">
+      </div>
+      <div id="backend-task-list" class="space-y-2 max-h-96 overflow-y-auto pr-1">
+        <!-- 動態渲染後台列表 -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ========== Supabase 設定 ==========
+    const SUPABASE_URL = 'https://dgaanslhbgnpfjewtsis.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable__OyNsH1RJTPtgDu22_9-ag_69UCWEMi';
+    const BACKEND_PASSWORD = 'Ht522524#';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 預設 42 個懲罰項目（首次啟動時寫入資料庫）
+    const initialTasks = [
+      { id: "1", location: "任何情況", gender: "不限", content: "禮貌尊稱：全日每句說話前都要先尊稱對方（例如主人、老公老婆、寶貝等），否則罰打屁屁一下。" },
+      { id: "2", location: "任何情況", gender: "不限", content: "禁止說「不」：一天內輸家不能說「不」。" },
+      { id: "3", location: "任何情況", gender: "不限", content: "性感耳語告白：貼在對方耳邊，用溫柔的聲音向對方請求愛撫。" },
+      { id: "4", location: "任何情況", gender: "不限", content: "真心話情慾提問：誠實回答一個關於性幻想或希望嘗試的情趣體驗提問。" },
+      { id: "5", location: "任何情況", gender: "不限", content: "雙手掌心保管：坐著時雙手放在對方掌心中，由贏家決定何時放開。" },
+      { id: "6", location: "任何情況", gender: "不限", content: "飲水批准：輸家立即飲 1 公升水，去廁所前先獲得贏家批准。" },
+      { id: "7", location: "任何情況", gender: "女", content: "沒收內褲：輸家不准穿內褲外出，如已外出，需到洗手間脫下內褲，並由贏家沒收。" },
+      { id: "8", location: "任何情況", gender: "女", content: "沒收胸罩：輸家不准穿胸罩外出，如已外出，需到洗手間脫下胸罩，並由贏家沒收。" },
+      { id: "9", location: "任何情況", gender: "女", content: "專屬拘束服從（跳蛋）：輸家穿戴跳蛋，不獲贏家批准不能除下。" },
+      { id: "10", location: "任何情況", gender: "女", content: "專屬拘束服從（尾巴）：輸家穿戴尾巴，不獲贏家批准不能除下。" },
+      { id: "11", location: "任何情況", gender: "女", content: "乳房搓揉：輸家雙手放後面，任由贏家搓揉乳房。" },
+      { id: "12", location: "任何情況", gender: "不限", content: "沒收手機：輸家需沒收手機。" },
+      { id: "13", location: "任何情況", gender: "不限", content: "文字情慾告白：贏家在手機上打出/找出一段帶有挑逗意味的訊息傳給輸家，隨後輸家看著贏家大聲/親口讀出該訊息。" },
+      { id: "14", location: "任何情況", gender: "不限", content: "暗號回應機制：贏家只要輕捏輸家的手心兩下，輸家就必須立刻露出甜美/討好的微笑並叫對方尊稱（例如主人、老公老婆、寶貝等）。" },
+      { id: "15", location: "任何情況", gender: "不限", content: "無條件服從答覆：接下來的 10 分鐘內，輸家回應贏家的每一句話，開頭都必須是「好，今日聽你話」。" },
+      { id: "16", location: "任何情況", gender: "不限", content: "飲茶批准：輸家立即飲 300 毫升茶，10 分鐘後需再飲 300 毫升茶，去廁所前先獲得贏家批准。" },
+      { id: "17", location: "在家", gender: "不限", content: "眼罩猜物與觸覺探索：輸家戴眼罩，由贏家拿小物、羽毛或手指輕碰身體，猜錯繼續猜。" },
+      { id: "18", location: "在家", gender: "不限", content: "姿勢定格挑戰：依對方指示維持舒服的坐姿、跪姿或指定姿勢 1 分鐘不准動。" },
+      { id: "19", location: "在家", gender: "不限", content: "單手扣腰帶：把一隻手扣在自己的腰帶或椅子扶手上，另一隻手保持自由。" },
+      { id: "20", location: "在家", gender: "不限", content: "打屁屁互動：輸家主動請求贏家拍屁屁五下，每完成一下需向贏家道謝。" },
+      { id: "21", location: "在家", gender: "不限", content: "主動索吻：贏家指向嘴唇時，輸家提出索吻請求，獲同意後親吻。" },
+      { id: "22", location: "在家", gender: "不限", content: "解除身上防線：輸家脫掉身上的衣物至全裸。" },
+      { id: "23", location: "在家", gender: "不限", content: "冰火感官三重奏：贏家含冰水/冰塊或溫水，在輸家的脖子、鎖骨或大腿內側輕滑與親吻。" },
+      { id: "24", location: "在家", gender: "不限", content: "人體盛裝零食：輸家躺下，贏家將葡萄、巧克力或冰塊放在輸家鎖骨或肚臍上用嘴唇吃掉。" },
+      { id: "25", location: "在家", gender: "不限", content: "禁語挑逗：贏家挑逗輸家 1 分鐘，輸家發出聲音即失敗並延長時間。" },
+      { id: "26", location: "在家", gender: "不限", content: "倒數親吻引爆：兩人深情親吻 30 秒，期間雙唇不能分開且贏家的手可隨意在對方身上探索。" },
+      { id: "27", location: "在家", gender: "不限", content: "人體繪畫卡：贏家用手指在輸家胸口、背部或腹部寫字或畫圖，輸家憑皮膚感覺猜。" },
+      { id: "28", location: "在家", gender: "不限", content: "滿足請求：輸家在高潮之前告知贏家，請求贏家批准才可高潮。" },
+      { id: "29", location: "在家", gender: "不限", content: "盲盒親吻地點：輸家戴眼罩，贏家決定親吻部位，親吻不少於 15 秒，輸家需要猜出親吻部位。" },
+      { id: "30", location: "在家", gender: "不限", content: "專屬拘束服從（眼罩）：輸家戴上眼罩，不獲贏家批准不能除下。" },
+      { id: "31", location: "在家", gender: "女", content: "乳頭吸啜請求：輸家愛撫自己乳頭，直至乳頭凸起，並請求贏家吸啜。" },
+      { id: "32", location: "在家", gender: "不限", content: "面壁罰站：貼著牆壁站立，雙手舉高貼牆，反思並說着三件自己需要改善的事，請求贏家原諒。" },
+      { id: "33", location: "在家", gender: "不限", content: "專屬拘束服從（口塞/揞口）：輸家穿戴口塞/雙手揞口，不獲贏家批准不能除下。" },
+      { id: "34", location: "在家", gender: "不限", content: "雙手扣雙腳：輸家將雙手扣於雙腳。" },
+      { id: "35", location: "在家", gender: "女", content: "乳夾跳躍：輸家自行佩戴乳夾，佩戴後連續跳 10 下，乳夾的鈴鐺須響起且不能掉下，否則重新計算跳的數量。" },
+      { id: "36", location: "在家", gender: "不限", content: "吹氣挑逗：贏家將催情潤滑劑塗抹在輸家敏感部位，塗抹後，贏家在塗抹的地方用口吹氣，但不碰輸家的身體，輸家不能動，也不能觸碰贏家的身體。" },
+      { id: "37", location: "在家", gender: "女", content: "陰蒂吸啜器忍耐：使用陰蒂吸啜器吸啜 1 分鐘，輸家不准發聲，否則重新計算時間。" },
+      { id: "38", location: "在家", gender: "不限", content: "私密指令解鎖：輸家跪坐在贏家腿間，雙手放在背後，僅能依靠眼神和微弱的討好聲請求贏家給予摸頭或撫摸。" },
+      { id: "39", location: "在家", gender: "不限", content: "聽覺剝奪指令：輸家戴上耳機聽白噪音，贏家全程用嘴型或肢體語言下達指令，輸家猜中並照做方可解脫。" },
+      { id: "40", location: "在家", gender: "不限", content: "肢體倒影複製：贏家做出任何微小動作（如撫摸、喝水），輸家必須在 3 秒內做出完全一樣的動作，維持 1 分鐘。" },
+      { id: "41", location: "在家", gender: "不限", content: "雙手綁縛臣服：輸家雙手在身後用絲巾輕輕繫住，維持跪姿或趴姿 2 分鐘，任由贏家挑逗，輸家在贏家耳邊呻吟。" },
+      { id: "42", location: "在家", gender: "不限", content: "口部服侍：輸家用口服侍贏家下體敏感部位 1 分鐘。" }
+    ];
+
+    // 全域狀態
+    let tasks = [];
+    let drawnLogs = [];
+    let currentDrawnTask = null;
+    let selectedLocation = "";
+    let selectedExecutor = "";
+    let isBackendUnlocked = false;
+
+    // ========== 初始化 ==========
+    window.onload = async function() {
+      await initData();
+      checkFilters();
+      renderLogs();
+    };
+
+    async function initData() {
+      try {
+        // 載入任務庫
+        const { data: taskData, error: taskError } = await supabaseClient
+          .from('tasks')
+          .select('*')
+          .order('id');
+
+        if (taskError) throw taskError;
+
+        if (!taskData || taskData.length === 0) {
+          // 首次使用：寫入預設 42 個任務
+          console.log('首次啟動，正在寫入預設任務...');
+          const { error: insertError } = await supabaseClient
+            .from('tasks')
+            .insert(initialTasks);
+          if (insertError) throw insertError;
+          tasks = [...initialTasks];
+        } else {
+          tasks = taskData;
+        }
+
+        // 載入記錄清單
+        const { data: logData, error: logError } = await supabaseClient
+          .from('drawn_logs')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (logError) throw logError;
+        drawnLogs = logData || [];
+
+        renderLogs();
+        console.log('資料載入完成，任務數：', tasks.length, '紀錄數：', drawnLogs.length);
+      } catch (err) {
+        console.error('初始化失敗：', err);
+        alert('無法連線到資料庫，請檢查網路或稍後再試。\n錯誤：' + (err.message || err));
+      }
+    }
+
+    // ========== 篩選與抽籤 ==========
+    function selectLocation(loc) {
+      selectedLocation = loc;
+      const btnHome = document.getElementById('btn-loc-home');
+      const btnAnywhere = document.getElementById('btn-loc-anywhere');
+
+      if (loc === '在家') {
+        btnHome.className = "py-2.5 px-3 rounded-xl text-xs font-semibold border border-rose-500 bg-rose-600/30 text-rose-200 shadow-md shadow-rose-950/50 transition-all flex items-center justify-center gap-1";
+        btnAnywhere.className = "py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1";
+      } else {
+        btnAnywhere.className = "py-2.5 px-3 rounded-xl text-xs font-semibold border border-rose-500 bg-rose-600/30 text-rose-200 shadow-md shadow-rose-950/50 transition-all flex items-center justify-center gap-1";
+        btnHome.className = "py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1";
+      }
+      checkFilters();
+    }
+
+    function selectExecutor(exe) {
+      selectedExecutor = exe;
+      const btnMale = document.getElementById('btn-exe-male');
+      const btnFemale = document.getElementById('btn-exe-female');
+
+      if (exe === '男') {
+        btnMale.className = "py-2.5 px-3 rounded-xl text-xs font-semibold border border-purple-500 bg-purple-600/30 text-purple-200 shadow-md shadow-purple-950/50 transition-all flex items-center justify-center gap-1";
+        btnFemale.className = "py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1";
+      } else {
+        btnFemale.className = "py-2.5 px-3 rounded-xl text-xs font-semibold border border-pink-500 bg-pink-600/30 text-pink-200 shadow-md shadow-pink-950/50 transition-all flex items-center justify-center gap-1";
+        btnMale.className = "py-2.5 px-3 rounded-xl text-xs font-medium border border-slate-700/80 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition-all flex items-center justify-center gap-1";
+      }
+      checkFilters();
+    }
+
+    function checkFilters() {
+      const btn = document.getElementById('draw-btn');
+      const warn = document.getElementById('filter-warning');
+
+      if (selectedLocation && selectedExecutor) {
+        btn.disabled = false;
+        warn.innerText = "條件已選擇，可開啟抽籤";
+        warn.className = "text-emerald-400 text-[11px]";
+      } else {
+        btn.disabled = true;
+        warn.innerText = "請選擇地點與執行者";
+        warn.className = "text-rose-400 text-[11px]";
+      }
+    }
+
+    function drawTask() {
+      if (!selectedLocation || !selectedExecutor) return;
+
+      const drawnTaskIds = drawnLogs.map(l => l.task_id);
+
+      const availableTasks = tasks.filter(t => {
+        const locMatch = (t.location === selectedLocation || t.location === "任何情況");
+        const genderMatch = (t.gender === "不限" || t.gender === selectedExecutor);
+        const notDrawn = !drawnTaskIds.includes(t.id);
+        return locMatch && genderMatch && notDrawn;
+      });
+
+      if (availableTasks.length === 0) {
+        alert("⚠️ 符合條件的任務已全部抽取完畢！（可點擊最下方按鈕重置紀錄）");
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * availableTasks.length);
+      currentDrawnTask = availableTasks[randomIndex];
+
+      document.getElementById('result-tag').innerText = `${currentDrawnTask.location} · 輸家：${selectedExecutor}`;
+      document.getElementById('result-content').innerText = currentDrawnTask.content;
+      document.getElementById('result-box').classList.remove('hidden');
+    }
+
+    async function handleTaskAction(statusType) {
+      if (!currentDrawnTask) return;
+
+      const newLog = {
+        log_id: Date.now().toString() + '_' + Math.random().toString(36).slice(2, 7),
+        task_id: currentDrawnTask.id,
+        executor: selectedExecutor,
+        content: currentDrawnTask.content,
+        status: statusType === '已完成' ? '已完成任務' : '稍後完成'
+      };
+
+      try {
+        const { error } = await supabaseClient.from('drawn_logs').insert([newLog]);
+        if (error) throw error;
+
+        drawnLogs.unshift(newLog);
+        document.getElementById('result-box').classList.add('hidden');
+        currentDrawnTask = null;
+        renderLogs();
+      } catch (err) {
+        console.error(err);
+        alert('儲存紀錄失敗：' + (err.message || err));
+      }
+    }
+
+    async function toggleLogStatus(logId) {
+      const log = drawnLogs.find(l => l.log_id === logId);
+      if (!log) return;
+
+      const newStatus = log.status === '已完成任務' ? '稍後完成' : '已完成任務';
+
+      try {
+        const { error } = await supabaseClient
+          .from('drawn_logs')
+          .update({ status: newStatus })
+          .eq('log_id', logId);
+        if (error) throw error;
+
+        log.status = newStatus;
+        renderLogs();
+      } catch (err) {
+        console.error(err);
+        alert('更新狀態失敗：' + (err.message || err));
+      }
+    }
+
+    function renderLogs() {
+      const maleBox = document.getElementById('log-list-male');
+      const femaleBox = document.getElementById('log-list-female');
+
+      const maleLogs = drawnLogs.filter(l => l.executor === '男');
+      const femaleLogs = drawnLogs.filter(l => l.executor === '女');
+
+      document.getElementById('male-count').innerText = maleLogs.length;
+      document.getElementById('female-count').innerText = femaleLogs.length;
+
+      maleBox.innerHTML = maleLogs.length ? maleLogs.map(l => createLogCardHtml(l)).join('') : '<p class="text-[11px] text-slate-500 text-center py-4">暫無紀錄</p>';
+      femaleBox.innerHTML = femaleLogs.length ? femaleLogs.map(l => createLogCardHtml(l)).join('') : '<p class="text-[11px] text-slate-500 text-center py-4">暫無紀錄</p>';
+    }
+
+    function createLogCardHtml(log) {
+      const isLater = log.status === '稍後完成';
+      const statusClass = isLater ? 'text-red-400 border-red-800/80 bg-red-950/60 font-bold' : 'text-emerald-400 border-emerald-800/60 bg-emerald-950/40';
+
+      return `
+        <div onclick="toggleLogStatus('${log.log_id}')" class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all space-y-1.5">
+          <p class="text-xs text-slate-200 leading-snug font-medium">${log.content}</p>
+          <div class="flex justify-between items-center text-[9px]">
+            <span class="px-1.5 py-0.5 rounded border ${statusClass}">
+              ${log.status}
+            </span>
+            <span class="text-slate-500">點擊切換</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // ========== 重置紀錄 ==========
+    async function confirmResetAll() {
+      if (!confirm("確定要重置所有紀錄嗎？\n重置後記錄清單將會徹底清空，所有任務回復為可被抽籤狀態！")) return;
+
+      try {
+        // 刪除所有紀錄
+        const { error } = await supabaseClient
+          .from('drawn_logs')
+          .delete()
+          .neq('log_id', ''); // 刪除全部
+
+        if (error) throw error;
+
+        drawnLogs = [];
+        currentDrawnTask = null;
+        document.getElementById('result-box').classList.add('hidden');
+        renderLogs();
+        alert("✅ 紀錄已成功重置！所有懲罰項目現在都可以重新被抽籤。");
+      } catch (err) {
+        console.error(err);
+        alert('重置失敗：' + (err.message || err));
+      }
+    }
+
+    // ========== 後台密碼保護 ==========
+    function tryOpenBackend() {
+      if (isBackendUnlocked || sessionStorage.getItem('backend_unlocked') === 'true') {
+        isBackendUnlocked = true;
+        switchPage('backend');
+        return;
+      }
+
+      const pwd = prompt('請輸入後台密碼：');
+      if (pwd === BACKEND_PASSWORD) {
+        isBackendUnlocked = true;
+        sessionStorage.setItem('backend_unlocked', 'true');
+        switchPage('backend');
+      } else if (pwd !== null) {
+        alert('密碼錯誤！');
+      }
+    }
+
+    // ========== 視圖切換 ==========
+    function switchPage(page) {
+      const home = document.getElementById('home-page');
+      const backend = document.getElementById('page-backend');
+      const btnDraw = document.getElementById('nav-draw-btn');
+      const btnBackend = document.getElementById('nav-backend-btn');
+
+      if (page === 'draw') {
+        home.classList.remove('hidden');
+        backend.classList.add('hidden');
+        btnDraw.className = "px-3 py-1.5 rounded-full transition-all flex items-center gap-1 bg-gradient-to-r from-rose-600 to-purple-600 text-white shadow-md";
+        btnBackend.className = "px-3 py-1.5 rounded-full transition-all flex items-center gap-1 text-slate-400 hover:text-slate-200";
+      } else {
+        home.classList.add('hidden');
+        backend.classList.remove('hidden');
+        btnBackend.className = "px-3 py-1.5 rounded-full transition-all flex items-center gap-1 bg-gradient-to-r from-rose-600 to-purple-600 text-white shadow-md";
+        btnDraw.className = "px-3 py-1.5 rounded-full transition-all flex items-center gap-1 text-slate-400 hover:text-slate-200";
+        renderBackendList();
+      }
+    }
+
+    // ========== 任務後台 CRUD ==========
+    function renderBackendList() {
+      const search = (document.getElementById('backend-search').value || '').toLowerCase();
+      const listEl = document.getElementById('backend-task-list');
+
+      const filtered = tasks.filter(t => t.content.toLowerCase().includes(search));
+      document.getElementById('backend-count').innerText = tasks.length;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<p class="text-[11px] text-slate-500 text-center py-6">找不到符合的懲罰任務</p>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(t => `
+        <div class="glass-card p-3 rounded-xl flex items-start justify-between gap-2 text-xs">
+          <div class="flex-1 space-y-1">
+            <div class="flex items-center gap-1.5 text-[9px]">
+              <span class="px-1.5 py-0.5 bg-slate-950 rounded border border-slate-800 text-rose-300">${t.location}</span>
+              <span class="px-1.5 py-0.5 bg-slate-950 rounded border border-slate-800 text-purple-300">性別：${t.gender}</span>
+            </div>
+            <div class="text-slate-200 font-medium leading-relaxed">${t.content}</div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="editTask('${t.id}')" class="text-slate-300 hover:text-rose-400 p-1.5 bg-slate-950 rounded-lg border border-slate-800 text-[10px]">
+              ✏️ 編輯
+            </button>
+            <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-400 p-1.5 bg-slate-950 rounded-lg border border-slate-800 text-[10px]">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveTask() {
+      const editId = document.getElementById('edit-task-id').value;
+      const loc = document.getElementById('input-task-loc').value;
+      const gender = document.getElementById('input-task-gender').value;
+      const content = document.getElementById('input-task-content').value.trim();
+
+      if (!content) {
+        alert("請輸入任務描述內容！");
+        return;
+      }
+
+      try {
+        if (editId) {
+          // 更新
+          const { error } = await supabaseClient
+            .from('tasks')
+            .update({ location: loc, gender: gender, content: content })
+            .eq('id', editId);
+          if (error) throw error;
+
+          tasks = tasks.map(t => t.id === editId ? { ...t, location: loc, gender: gender, content: content } : t);
+
+          // 同步更新已有紀錄的內容
+          await supabaseClient
+            .from('drawn_logs')
+            .update({ content: content })
+            .eq('task_id', editId);
+
+          drawnLogs = drawnLogs.map(l => l.task_id === editId ? { ...l, content: content } : l);
+        } else {
+          // 新增
+          const newTask = {
+            id: 'custom_' + Date.now(),
+            location: loc,
+            gender: gender,
+            content: content
+          };
+          const { error } = await supabaseClient.from('tasks').insert([newTask]);
+          if (error) throw error;
+          tasks.push(newTask);
+        }
+
+        cancelEdit();
+        renderBackendList();
+        renderLogs();
+        alert(editId ? "✅ 任務編輯成功！" : "✅ 任務新增成功！");
+      } catch (err) {
+        console.error(err);
+        alert('儲存失敗：' + (err.message || err));
+      }
+    }
+
+    function editTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('edit-task-id').value = task.id;
+      document.getElementById('input-task-loc').value = task.location;
+      document.getElementById('input-task-gender').value = task.gender;
+      document.getElementById('input-task-content').value = task.content;
+
+      document.getElementById('backend-form-title').innerText = "✏️ 編輯懲罰任務";
+      document.getElementById('btn-save-task').innerText = "儲存修改內容";
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      document.getElementById('edit-task-id').value = "";
+      document.getElementById('input-task-content').value = "";
+      document.getElementById('backend-form-title').innerText = "➕ 新增懲罰任務";
+      document.getElementById('btn-save-task').innerText = "儲存任務";
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    async function deleteTask(id) {
+      if (!confirm("確定要刪除這條懲罰任務嗎？")) return;
+
+      try {
+        const { error } = await supabaseClient.from('tasks').delete().eq('id', id);
+        if (error) throw error;
+
+        // 同時刪除相關紀錄
+        await supabaseClient.from('drawn_logs').delete().eq('task_id', id);
+
+        tasks = tasks.filter(t => t.id !== id);
+        drawnLogs = drawnLogs.filter(l => l.task_id !== id);
+
+        renderBackendList();
+        renderLogs();
+      } catch (err) {
+        console.error(err);
+        alert('刪除失敗：' + (err.message || err));
+      }
+    }
+  </script>
+</body>
+</html>
